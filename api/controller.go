@@ -7,7 +7,7 @@ import (
 )
 
 func Controller(r *gin.Engine) {
-	arcRouter := r.Group("/tg/bot")
+	arcRouter := r.Group("/api")
 
 	{
 		arcRouter.GET("/ping", func(c *gin.Context) {

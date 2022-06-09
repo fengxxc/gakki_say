@@ -8,9 +8,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func FetchTask(updateCallback func(*tgbotapi.BotAPI, tgbotapi.Update)) {
-	botToken := "5484491783:AAGeic7Cex9bcjXx2dXfi6r0nZlC_gYs-x4"
-
+func FetchTask(botToken string, updateCallback func(*tgbotapi.BotAPI, tgbotapi.Update)) {
 	// bot, err := tgbotapi.NewBotAPI(botToken)
 	proxyUrl, err := url.Parse("socks5://127.0.0.1:1070") //设置代理http或sock5
 	if err != nil {
