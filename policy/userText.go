@@ -24,13 +24,19 @@ func UserText(userText string) Reply {
 		reply.Type = Image
 		reply.Body = imgToBytes(img, imgType)
 	case "ping":
-		img, imgType, err := getImg("./img/pingpang.jpg")
+		/* img, imgType, err := getImg("./img/pingpang.jpg")
+		if err != nil {
+			log.Println(err)
+			return reply
+		} */
+		fileName := "./img/pingpang.jpg"
+		img, err := imgWriteText(fileName, "pang~")
 		if err != nil {
 			log.Println(err)
 			return reply
 		}
 		reply.Type = Image
-		reply.Body = imgToBytes(img, imgType)
+		reply.Body = imgToBytes(img, getImgTypeByFileName(fileName))
 	default:
 		reply.Type = Text
 		reply.Body = []byte("已婚，谢谢~")
