@@ -15,7 +15,7 @@ func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string) {
 	}
 }
 
-func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText string) {
+func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText string, symbolMaps *policy.SymbolMaps) {
 	var numericKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("1"),
@@ -60,10 +60,10 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText
 		return
 	}
 
-	var reply policy.Reply = policy.UserText(userText)
+	var reply policy.Reply = policy.UserText(userText, symbolMaps)
 
 	if reply.Type == policy.Failed {
-		msg.Text = "吖拜，出错了……"
+		msg.Text = "吖白，大脑一片空白……"
 		if _, err := bot.Send(msg); err != nil {
 			log.Println(err)
 		}
