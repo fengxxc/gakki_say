@@ -92,7 +92,18 @@ func imgToBytes(img image.Image, imgType ImageType) []byte {
 	return buf.Bytes()
 }
 
-func imgWriteText(fileName string, text string) (image.Image, error) {
+type RGBA struct {
+	R int
+	G int
+	B int
+	A int
+}
+
+func (rgba *RGBA) getGgStyleRGBA() (float64, float64, float64, float64) {
+	return GetGgStyleRGBA(rgba.R, rgba.G, rgba.B, rgba.A)
+}
+
+func imgWriteText(fileName string, text string, ax float64, ay float64, rgba *RGBA) (image.Image, error) {
 	// img, err := gg.LoadPNG(fileName)
 	img, err := gg.LoadImage(fileName)
 	if err != nil {
@@ -112,20 +123,28 @@ func imgWriteText(fileName string, text string) (image.Image, error) {
 	textWidth, textHeight := dc.MeasureString(text)
 
 	// 文字底色
-	dc.DrawRectangle(float64(size.X)/2-textWidth/2, float64(size.Y)/2-textHeight/2, textWidth, textHeight+20)
-	dc.SetRGBA(1, 0.8, 1, 0.5)
-	dc.Fill()
-	// dc.DrawString(text, (float64(size.X)-textWidth)/2, (float64(size.Y))/2)
-	dc.SetRGB(getGgStyleRGB(255, 255, 255))
-	dc.DrawStringAnchored(text, float64(size.X)/2, float64(size.Y)/2, 0.5, 0.5)
+	if rgba != nil {
+		dc.DrawRectangle(float64(size.X)/2-textWidth/2, float64(size.Y)/2-textHeight/2+20, textWidth, textHeight+40)
+		// dc.SetRGBA(1, 0.8, 1, 0.5)
+		dc.SetRGBA(rgba.getGgStyleRGBA())
+		dc.Fill()
+	}
+
+	// 写文字
+	dc.SetRGB(GetGgStyleRGB(255, 255, 255))
+	dc.DrawStringAnchored(text, float64(size.X)/2, float64(size.Y)/2, ax, ay)
 
 	// for test
-	dc.SetRGB(getGgStyleRGB(0, 255, 0))
+	dc.SetRGB(GetGgStyleRGB(0, 255, 0))
 	dc.DrawCircle(float64(size.X/2), float64(size.Y/2), 5)
 	dc.Fill()
 	return dc.Image(), nil
 }
 
-func getGgStyleRGB(r int, g int, b int) (float64, float64, float64) {
-	return float64(r / 255), float64(g / 255), float64(b / 255)
+func GetGgStyleRGBA(r int, g int, b int, a int) (float64, float64, float64, float64) {
+	return float64(r) / 255, float64(g) / 255, float64(b) / 255, float64(a) / 255
+}
+
+func GetGgStyleRGB(r int, g int, b int) (float64, float64, float64) {
+	return float64(r) / 255, float64(g) / 255, float64(b) / 255
 }

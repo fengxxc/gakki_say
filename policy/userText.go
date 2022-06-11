@@ -30,7 +30,7 @@ func UserText(userText string) Reply {
 			return reply
 		} */
 		fileName := "./img/pingpang.jpg"
-		img, err := imgWriteText(fileName, "pang~")
+		img, err := imgWriteText(fileName, "pang~", 0.5, 0.5, &RGBA{255, 204, 255, 89})
 		if err != nil {
 			log.Println(err)
 			return reply
