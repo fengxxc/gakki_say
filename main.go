@@ -20,7 +20,7 @@ func main() {
 	var symbolMaps policy.SymbolMaps = imgDef.GetMaps()
 	// log.Printf("%+v", symbolMaps)
 
-	myTgBot.FetchTask(config.TgBotToken, func(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	myTgBot.FetchTask(config.TgBotToken, config.TgProxy, func(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		userUsername := update.Message.From.UserName
 		userText := update.Message.Text
 		log.Printf("[%s] %s", userUsername, userText)
@@ -39,6 +39,7 @@ func main() {
 
 type Config struct {
 	TgBotToken string `json:"tgBotToken"`
+	TgProxy    string `json:"tgProxy"`
 }
 
 func loadConfig(path string) *Config {

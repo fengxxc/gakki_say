@@ -1,3 +1,4 @@
 {
-    "tgBotToken": "Your telegram bot Token"
+    "tgBotToken": "replace your telegram bot Token",
+    "tgProxy": "replace proxy url if you need, such as 'socks5://127.0.0.1:1080'"
 }
