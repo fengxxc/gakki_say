@@ -8,7 +8,6 @@ import (
 	"image/png"
 	"log"
 	"math/rand"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -26,40 +25,6 @@ const (
 	Jpeg
 	Gif
 )
-
-func getImg(fileName string) (image.Image, ImageType, error) {
-	f, err := os.Open(fileName)
-	if err != nil {
-		log.Println(err)
-		return nil, Unknown, err
-	}
-	defer f.Close()
-	fileExt := strings.ToLower(filepath.Ext(fileName))
-	var img image.Image
-	var imgType ImageType
-	// 先用最土的方式判断类型
-	switch fileExt {
-	case ".jpg":
-		imgType = Jpg
-		img, err = jpeg.Decode(f)
-	case ".jpeg":
-		imgType = Jpeg
-		img, err = jpeg.Decode(f)
-	case ".png":
-		imgType = Png
-		img, err = png.Decode(f)
-	case ".gif":
-		imgType = Gif
-		img, err = gif.Decode(f)
-	default:
-		log.Println("Unsupported file format: " + fileExt)
-	}
-	if err != nil {
-		log.Println(err)
-		return nil, Unknown, err
-	}
-	return img, imgType, nil
-}
 
 func getImgTypeByFileName(fileName string) ImageType {
 	fileExt := strings.ToLower(filepath.Ext(fileName))
@@ -106,7 +71,14 @@ func (rgba *RGBA) getGgStyleRGBA() (float64, float64, float64, float64) {
 	return GetGgStyleRGBA(rgba.R, rgba.G, rgba.B, rgba.A)
 }
 
-func imgWriteText(fileName string, text string, ax float64, ay float64, rgba *RGBA) (image.Image, error) {
+type DrawStringConfig struct {
+	ax          float64
+	ay          float64
+	fontFamily  string
+	textBgColor *RGBA
+}
+
+func imgWriteText(fileName string, text string, drawStringConfig DrawStringConfig) (image.Image, error) {
 	// img, err := gg.LoadPNG(fileName)
 	img, err := gg.LoadImage(fileName)
 	if err != nil {
@@ -117,7 +89,11 @@ func imgWriteText(fileName string, text string, ax float64, ay float64, rgba *RG
 	dc := gg.NewContext(size.X, size.Y)
 	dc.DrawImage(img, 0, 0)
 
-	err = dc.LoadFontFace("./font/simhei.ttf", 120)
+	fontFamily := "simhei.ttf"
+	if drawStringConfig.fontFamily != "" {
+		fontFamily = drawStringConfig.fontFamily
+	}
+	err = dc.LoadFontFace("./font/"+fontFamily, 100)
 	if err != nil {
 		log.Printf("Error loading font face %s", "simhei.ttf")
 		return nil, err
@@ -126,16 +102,16 @@ func imgWriteText(fileName string, text string, ax float64, ay float64, rgba *RG
 	textWidth, textHeight := dc.MeasureString(text)
 
 	// 文字底色
-	if rgba != nil {
+	if drawStringConfig.textBgColor != nil {
 		dc.DrawRectangle(float64(size.X)/2-textWidth/2, float64(size.Y)/10*8-textHeight/2, textWidth+20, textHeight+40)
 		// dc.SetRGBA(1, 0.8, 1, 0.5)
-		dc.SetRGBA(rgba.getGgStyleRGBA())
+		dc.SetRGBA(drawStringConfig.textBgColor.getGgStyleRGBA())
 		dc.Fill()
 	}
 
 	// 写文字
 	dc.SetRGB(GetGgStyleRGB(255, 255, 255))
-	dc.DrawStringAnchored(text, float64(size.X)/2, float64(size.Y)/10*8, ax, ay)
+	dc.DrawStringAnchored(text, float64(size.X)/2, float64(size.Y)/10*8, drawStringConfig.ax, drawStringConfig.ay)
 
 	// for test
 	// dc.SetRGB(GetGgStyleRGB(0, 255, 0))

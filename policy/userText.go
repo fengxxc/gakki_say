@@ -32,7 +32,12 @@ func UserText(userText string, symbolMaps *SymbolMaps) Reply {
 	if symbolMaps.ContainsEmoji(firstPiece) {
 		var imgNameSet mapset.Set = symbolMaps.EmojiMap[firstPiece]
 		imgName := getSetRandom(imgNameSet).(string)
-		img, err := imgWriteText("./img/"+imgName, secondPiece, 0.5, 0.5, &RGBA{89, 89, 89, 64})
+		img, err := imgWriteText("./img/"+imgName, secondPiece, DrawStringConfig{
+			ax:          0.5,
+			ay:          0.5,
+			fontFamily:  "SIMYOU.TTF",
+			textBgColor: &RGBA{89, 89, 89, 64},
+		})
 		if err != nil {
 			log.Println(err)
 			return reply
@@ -52,7 +57,13 @@ func staticReply(text string, reply *Reply) bool {
 		ok = true
 	case "ping":
 		fileName := "./img/pingpang.jpg"
-		img, err := imgWriteText(fileName, "pang~", 0.5, 0.5, &RGBA{255, 204, 255, 89})
+		img, err := imgWriteText(fileName, "pang~", DrawStringConfig{
+			ax:         0.5,
+			ay:         0.5,
+			fontFamily: "SIMYOU.TTF",
+			// fontFamily:  "simhei.ttf",
+			textBgColor: &RGBA{255, 204, 255, 89},
+		})
 		if err != nil {
 			log.Println(err)
 			return false

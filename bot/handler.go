@@ -9,10 +9,8 @@ import (
 
 func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string) {
 	msg := tgbotapi.NewMessage(chatId, "")
-	msg.Text = policy.Command(command)
-	if _, err := bot.Send(msg); err != nil {
-		log.Panic(err)
-	}
+	var reply policy.Reply = policy.Command(command)
+	sendReply(bot, msg, chatId, reply)
 }
 
 func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText string, symbolMaps *policy.SymbolMaps) {
@@ -59,9 +57,11 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText
 		bot.Send(msg)
 		return
 	}
-
 	var reply policy.Reply = policy.UserText(userText, symbolMaps)
+	sendReply(bot, msg, chatId, reply)
+}
 
+func sendReply(bot *tgbotapi.BotAPI, msg tgbotapi.MessageConfig, chatId int64, reply policy.Reply) {
 	if reply.Type == policy.Failed {
 		msg.Text = "吖白，大脑一片空白……"
 		if _, err := bot.Send(msg); err != nil {
@@ -82,9 +82,4 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText
 			log.Println(err)
 		}
 	}
-
 }
-
-/* func getTgMessage(reply *policy.Reply, replyMessage bool) tgbotapi.MessageConfig {
-
-} */
