@@ -35,6 +35,21 @@ func FetchTask(botToken string, proxy string, updateCallback func(*tgbotapi.BotA
 	for update := range updates {
 		if update.Message != nil { // If we got a message
 			updateCallback(bot, update)
+		} else if update.CallbackQuery != nil {
+			// Respond to the callback query, telling Telegram to show the user
+			// a message with the data received.
+			callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
+			// log.Println(callback.Text)
+			callback.Text = "You pick " + callback.Text
+			if _, err := bot.Request(callback); err != nil {
+				log.Println(err)
+			}
+
+			// And finally, send a message containing the data received.
+			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
+			if _, err := bot.Send(msg); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }

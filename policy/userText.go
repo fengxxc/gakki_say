@@ -32,18 +32,18 @@ func UserText(userText string, symbolMaps *SymbolMaps) Reply {
 	if symbolMaps.ContainsEmoji(firstPiece) {
 		var imgNameSet mapset.Set = symbolMaps.EmojiMap[firstPiece]
 		imgName := getSetRandom(imgNameSet).(string)
-		img, err := imgWriteText("./img/"+imgName, secondPiece, DrawStringConfig{
-			ax:          0.5,
-			ay:          0.5,
-			fontFamily:  "SIMYOU.TTF",
-			textBgColor: &RGBA{89, 89, 89, 64},
+		img, err := ImgWriteText("./img/"+imgName, secondPiece, DrawStringConfig{
+			Ax:          0.5,
+			Ay:          0.5,
+			FontFamily:  "SIMYOU.TTF",
+			TextBgColor: &RGBA{89, 89, 89, 64},
 		})
 		if err != nil {
 			log.Println(err)
 			return reply
 		}
 		reply.Type = Image
-		reply.Body = imgToBytes(img, getImgTypeByFileName(imgName))
+		reply.Body = ImgToBytes(img, GetImgTypeByFileName(imgName))
 	}
 	return reply
 }
@@ -54,22 +54,6 @@ func staticReply(text string, reply *Reply) bool {
 	case "hello":
 		reply.Type = Text
 		reply.Body = []byte("Hello, I'm Gakki~")
-		ok = true
-	case "ping":
-		fileName := "./img/pingpang.jpg"
-		img, err := imgWriteText(fileName, "pang~", DrawStringConfig{
-			ax:         0.5,
-			ay:         0.5,
-			fontFamily: "SIMYOU.TTF",
-			// fontFamily:  "simhei.ttf",
-			textBgColor: &RGBA{255, 204, 255, 89},
-		})
-		if err != nil {
-			log.Println(err)
-			return false
-		}
-		reply.Type = Image
-		reply.Body = imgToBytes(img, getImgTypeByFileName(fileName))
 		ok = true
 	}
 	return ok

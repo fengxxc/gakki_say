@@ -26,7 +26,7 @@ const (
 	Gif
 )
 
-func getImgTypeByFileName(fileName string) ImageType {
+func GetImgTypeByFileName(fileName string) ImageType {
 	fileExt := strings.ToLower(filepath.Ext(fileName))
 	var imgType ImageType
 	// 先用最土的方式判断类型
@@ -45,7 +45,7 @@ func getImgTypeByFileName(fileName string) ImageType {
 	return imgType
 }
 
-func imgToBytes(img image.Image, imgType ImageType) []byte {
+func ImgToBytes(img image.Image, imgType ImageType) []byte {
 	buf := new(bytes.Buffer)
 	switch imgType {
 	case Jpg:
@@ -72,13 +72,13 @@ func (rgba *RGBA) getGgStyleRGBA() (float64, float64, float64, float64) {
 }
 
 type DrawStringConfig struct {
-	ax          float64
-	ay          float64
-	fontFamily  string
-	textBgColor *RGBA
+	Ax          float64
+	Ay          float64
+	FontFamily  string
+	TextBgColor *RGBA
 }
 
-func imgWriteText(fileName string, text string, drawStringConfig DrawStringConfig) (image.Image, error) {
+func ImgWriteText(fileName string, text string, drawStringConfig DrawStringConfig) (image.Image, error) {
 	// img, err := gg.LoadPNG(fileName)
 	img, err := gg.LoadImage(fileName)
 	if err != nil {
@@ -90,8 +90,8 @@ func imgWriteText(fileName string, text string, drawStringConfig DrawStringConfi
 	dc.DrawImage(img, 0, 0)
 
 	fontFamily := "simhei.ttf"
-	if drawStringConfig.fontFamily != "" {
-		fontFamily = drawStringConfig.fontFamily
+	if drawStringConfig.FontFamily != "" {
+		fontFamily = drawStringConfig.FontFamily
 	}
 	err = dc.LoadFontFace("./font/"+fontFamily, 100)
 	if err != nil {
@@ -102,16 +102,16 @@ func imgWriteText(fileName string, text string, drawStringConfig DrawStringConfi
 	textWidth, textHeight := dc.MeasureString(text)
 
 	// 文字底色
-	if drawStringConfig.textBgColor != nil {
+	if drawStringConfig.TextBgColor != nil {
 		dc.DrawRectangle(float64(size.X)/2-textWidth/2, float64(size.Y)/10*8-textHeight/2, textWidth+20, textHeight+40)
 		// dc.SetRGBA(1, 0.8, 1, 0.5)
-		dc.SetRGBA(drawStringConfig.textBgColor.getGgStyleRGBA())
+		dc.SetRGBA(drawStringConfig.TextBgColor.getGgStyleRGBA())
 		dc.Fill()
 	}
 
 	// 写文字
 	dc.SetRGB(GetGgStyleRGB(255, 255, 255))
-	dc.DrawStringAnchored(text, float64(size.X)/2, float64(size.Y)/10*8, drawStringConfig.ax, drawStringConfig.ay)
+	dc.DrawStringAnchored(text, float64(size.X)/2, float64(size.Y)/10*8, drawStringConfig.Ax, drawStringConfig.Ay)
 
 	// for test
 	// dc.SetRGB(GetGgStyleRGB(0, 255, 0))
