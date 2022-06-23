@@ -2,6 +2,7 @@ package policy
 
 import (
 	"bytes"
+	"embed"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -14,6 +15,7 @@ import (
 
 	mapset "github.com/deckarep/golang-set"
 	"github.com/fogleman/gg"
+	"github.com/golang/freetype/truetype"
 )
 
 type ImageType int
@@ -78,22 +80,28 @@ type DrawStringConfig struct {
 	TextBgColor *RGBA
 }
 
-func ImgWriteText(fileName string, text string, drawStringConfig DrawStringConfig) (image.Image, error) {
-	// img, err := gg.LoadPNG(fileName)
-	img, err := gg.LoadImage(fileName)
+func ImgWriteText(fileName string, text string, drawStringConfig DrawStringConfig, imgDir embed.FS, fontDir embed.FS) (image.Image, error) {
+	// img, err := gg.LoadImage(fileName)
+	file, err := imgDir.Open(fileName)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	img, _, err := image.Decode(file)
 	if err != nil {
 		log.Printf("Error loading %s", fileName)
 		return nil, err
 	}
 	size := img.Bounds().Size()
-	dc := gg.NewContext(size.X, size.Y)
+	var dc *gg.Context = gg.NewContext(size.X, size.Y)
 	dc.DrawImage(img, 0, 0)
 
 	fontFamily := "simhei.ttf"
 	if drawStringConfig.FontFamily != "" {
 		fontFamily = drawStringConfig.FontFamily
 	}
-	err = dc.LoadFontFace("./font/"+fontFamily, 100)
+	// err = dc.LoadFontFace("./font/"+fontFamily, 100)
+	err = loadFontFaceAdapter(dc, "font/"+fontFamily, 100, fontDir)
 	if err != nil {
 		log.Printf("Error loading font face %s", "simhei.ttf")
 		return nil, err
@@ -153,4 +161,23 @@ func getSetRandom(set mapset.Set) interface{} {
 	randomIdx := rand.Intn(size) // [0,size)的随机值，返回值为int
 	var res interface{} = set.ToSlice()[randomIdx]
 	return res
+}
+
+// adapt gg.LoadFontFace()
+func loadFontFaceAdapter(dc *gg.Context, path string, points float64, fontDir embed.FS) error {
+	// fontBytes, err := ioutil.ReadFile(path)
+	fontBytes, err := fontDir.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	f, err := truetype.Parse(fontBytes)
+	if err != nil {
+		return err
+	}
+	face := truetype.NewFace(f, &truetype.Options{
+		Size: points,
+		// Hinting: font.HintingFull,
+	})
+	dc.SetFontFace(face)
+	return err
 }

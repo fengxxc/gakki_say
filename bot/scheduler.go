@@ -8,6 +8,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+// type UpdType
+
 func FetchTask(botToken string, proxy string, updateCallback func(*tgbotapi.BotAPI, tgbotapi.Update)) {
 	var myClient *http.Client = &http.Client{}
 	if proxy != "" {

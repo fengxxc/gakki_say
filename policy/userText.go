@@ -1,6 +1,7 @@
 package policy
 
 import (
+	"embed"
 	"log"
 
 	"strings"
@@ -8,7 +9,7 @@ import (
 	mapset "github.com/deckarep/golang-set"
 )
 
-func UserText(userText string, symbolMaps *SymbolMaps) Reply {
+func UserText(userText string, symbolMaps *SymbolMaps, imgDir embed.FS, fontDir embed.FS) Reply {
 	var reply Reply = Reply{Type: Failed, Body: []byte(userText)}
 	userText = strings.Trim(userText, " ")
 	// strings.Split(userText, " ")
@@ -32,12 +33,12 @@ func UserText(userText string, symbolMaps *SymbolMaps) Reply {
 	if symbolMaps.ContainsEmoji(firstPiece) {
 		var imgNameSet mapset.Set = symbolMaps.EmojiMap[firstPiece]
 		imgName := getSetRandom(imgNameSet).(string)
-		img, err := ImgWriteText("./img/"+imgName, secondPiece, DrawStringConfig{
+		img, err := ImgWriteText("img/"+imgName, secondPiece, DrawStringConfig{
 			Ax:          0.5,
 			Ay:          0.5,
 			FontFamily:  "SIMYOU.TTF",
 			TextBgColor: &RGBA{89, 89, 89, 64},
-		})
+		}, imgDir, fontDir)
 		if err != nil {
 			log.Println(err)
 			return reply

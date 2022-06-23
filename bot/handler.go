@@ -1,13 +1,14 @@
 package bot
 
 import (
+	"embed"
 	"log"
 
 	policy "github.com/fengxxc/gakki_say/policy"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string) {
+func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string, imgDir embed.FS, fontDir embed.FS) {
 	var reply policy.Reply = policy.Reply{Type: policy.Failed, Body: []byte("")}
 	switch command {
 	case "start":
@@ -35,13 +36,13 @@ func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string) {
 		reply.Type = policy.Text
 		reply.Body = []byte("这个功能还没做好……再等等")
 	case "ping":
-		fileName := "./img/pingpang.jpg"
+		fileName := "img/pingpang.jpg"
 		img, err := policy.ImgWriteText(fileName, "pang~", policy.DrawStringConfig{
 			Ax:          0.5,
 			Ay:          0.5,
 			FontFamily:  "SIMYOU.TTF",
 			TextBgColor: &policy.RGBA{R: 255, G: 204, B: 255, A: 89},
-		})
+		}, imgDir, fontDir)
 		if err != nil {
 			log.Println(err)
 			return
@@ -54,7 +55,7 @@ func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string) {
 	sendReply(bot, chatId, -1, reply)
 }
 
-func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText string, symbolMaps *policy.SymbolMaps) {
+func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText string, symbolMaps *policy.SymbolMaps, imgDir embed.FS, fontDir embed.FS) {
 	var numericKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("1"),
@@ -98,7 +99,7 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText
 		bot.Send(msg)
 		return
 	}
-	var reply policy.Reply = policy.UserText(userText, symbolMaps)
+	var reply policy.Reply = policy.UserText(userText, symbolMaps, imgDir, fontDir)
 	sendReply(bot, chatId, messageId, reply)
 }
 
