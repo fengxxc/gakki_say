@@ -8,9 +8,14 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// type UpdType
+type TgUpdType int
 
-func FetchTask(botToken string, proxy string, updateCallback func(*tgbotapi.BotAPI, tgbotapi.Update)) {
+const (
+	Message TgUpdType = iota
+	CallbackQuery
+)
+
+func FetchTask(botToken string, proxy string, updateCallback func(TgUpdType, *tgbotapi.BotAPI, tgbotapi.Update)) {
 	var myClient *http.Client = &http.Client{}
 	if proxy != "" {
 		proxyUrl, err := url.Parse(proxy)
@@ -36,22 +41,9 @@ func FetchTask(botToken string, proxy string, updateCallback func(*tgbotapi.BotA
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			updateCallback(bot, update)
+			updateCallback(Message, bot, update)
 		} else if update.CallbackQuery != nil {
-			// Respond to the callback query, telling Telegram to show the user
-			// a message with the data received.
-			callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
-			// log.Println(callback.Text)
-			callback.Text = "You pick " + callback.Text
-			if _, err := bot.Request(callback); err != nil {
-				log.Println(err)
-			}
-
-			// And finally, send a message containing the data received.
-			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
-			if _, err := bot.Send(msg); err != nil {
-				log.Println(err)
-			}
+			updateCallback(CallbackQuery, bot, update)
 		}
 	}
 }

@@ -26,17 +26,23 @@ func main() {
 	var symbolMaps policy.SymbolMaps = imgDef.GetMaps()
 	// log.Printf("%+v", symbolMaps)
 
-	myTgBot.FetchTask(config.TgBotToken, config.TgProxy, func(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-		userUsername := update.Message.From.UserName
-		userText := update.Message.Text
-		log.Printf("[%s] %s", userUsername, userText)
+	myTgBot.FetchTask(config.TgBotToken, config.TgProxy, func(tgUpdType myTgBot.TgUpdType, bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+		switch tgUpdType {
+		case myTgBot.Message:
+			userUsername := update.Message.From.UserName
+			userText := update.Message.Text
+			log.Printf("[%s] %s", userUsername, userText)
 
-		if update.Message.IsCommand() {
-			// 处理命令
-			myTgBot.CommmandHandler(bot, update.Message.Chat.ID, update.Message.Command(), imgDir, fontDir)
-		} else {
-			// 处理信息
-			myTgBot.UserTextHandler(bot, update.Message.Chat.ID, update.Message.MessageID, userText, &symbolMaps, imgDir, fontDir)
+			if update.Message.IsCommand() {
+				// 处理命令
+				myTgBot.CommmandHandler(bot, update.Message.Chat.ID, update.Message.Command(), imgDir, fontDir)
+			} else {
+				// 处理信息
+				myTgBot.UserTextHandler(bot, update.Message.Chat.ID, update.Message.MessageID, userText, &symbolMaps, imgDir, fontDir)
+			}
+
+		case myTgBot.CallbackQuery:
+			myTgBot.CallbackQueryHandler(bot, update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.ID, update.CallbackQuery.Data, imgDir, fontDir)
 		}
 
 	})

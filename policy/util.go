@@ -80,6 +80,16 @@ type DrawStringConfig struct {
 	TextBgColor *RGBA
 }
 
+func ImgWriteTextDefault(fileName string, text string, imgDir embed.FS, fontDir embed.FS) (image.Image, error) {
+	img, err := ImgWriteText(fileName, text, DrawStringConfig{
+		Ax:          0.5,
+		Ay:          0.5,
+		FontFamily:  "SIMYOU.TTF",
+		TextBgColor: &RGBA{89, 89, 89, 64},
+	}, imgDir, fontDir)
+	return img, err
+}
+
 func ImgWriteText(fileName string, text string, drawStringConfig DrawStringConfig, imgDir embed.FS, fontDir embed.FS) (image.Image, error) {
 	// img, err := gg.LoadImage(fileName)
 	file, err := imgDir.Open(fileName)

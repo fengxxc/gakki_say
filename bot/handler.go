@@ -8,6 +8,43 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+func CallbackQueryHandler(bot *tgbotapi.BotAPI, chatId int64, callbackQueryId string, callbackQueryData string, imgDir embed.FS, fontDir embed.FS) {
+	// Respond to the callback query, telling Telegram to show the user
+	// a message with the data received.
+	/* callback := tgbotapi.NewCallback(callbackQueryId, callbackQueryData)
+	log.Println(callback.Text)
+	callback.Text = "You pick " + callback.Text
+	if _, err := bot.Request(callback); err != nil {
+		log.Println(err)
+	} */
+
+	// And finally, send a message containing the data received.
+	if callbackQueryData == "random_case" {
+		randomText := "🤬 八嘎，谁放屁了？！"
+		callback := tgbotapi.NewCallback(callbackQueryId, "you send '"+randomText+"'")
+		if _, err := bot.Request(callback); err != nil {
+			log.Println(err)
+		}
+		userMsg := sendReply(bot, chatId, -1, policy.Reply{
+			Type: policy.Text,
+			Body: []byte(randomText),
+		})
+
+		fileName := "img/逃げ恥_09.003633.146.png"
+		img, err := policy.ImgWriteTextDefault(fileName, randomText, imgDir, fontDir)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		var reply policy.Reply = policy.Reply{
+			Type: policy.Image,
+			Body: policy.ImgToBytes(img, policy.GetImgTypeByFileName(fileName)),
+		}
+		sendReply(bot, chatId, userMsg.MessageID, reply)
+	}
+
+}
+
 func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string, imgDir embed.FS, fontDir embed.FS) {
 	var reply policy.Reply = policy.Reply{Type: policy.Failed, Body: []byte("")}
 	switch command {
@@ -15,16 +52,16 @@ func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string, imgDir 
 		// reply.Type = policy.Text
 		// reply.Body = []byte("初次见面，请多指教，我是图文并茂的Gakki~")
 		msg := tgbotapi.NewMessage(chatId, "初次见面，请多指教，我是图文并茂的gakki_say~ \n"+
-			"你可以使用我生成带文字的Gakki图片。 \n"+
+			"你可以使用我生成带文字的Gakki图片。 \n\n"+
 			"具体方法是：聊天框中输入 'emoji表情[空格]展现的文字'\n"+
-			"本机器人会根据emoji选择相应的Gakki图片并合成文字返回\n"+
-			"贡献代码或素材请点击“项目地址”\n"+
+			"我会根据emoji选择相应的Gakki图片并合成文字返回\n"+
+			"贡献代码或素材请点击“项目地址”\n\n"+
 			"现在，输入'👍 元气'试试看~ ",
 		)
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.NewInlineKeyboardButtonURL("项目地址", "https://github.com/fengxxc/gakki_say"),
-				tgbotapi.NewInlineKeyboardButtonData("随机示例", "random case"),
+				tgbotapi.NewInlineKeyboardButtonData("随机示例", "random_case"),
 			),
 		)
 		bot.Send(msg)
@@ -103,21 +140,19 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText
 	sendReply(bot, chatId, messageId, reply)
 }
 
-func sendReply(bot *tgbotapi.BotAPI, chatId int64, messageId int, reply policy.Reply) {
+func sendReply(bot *tgbotapi.BotAPI, chatId int64, messageId int, reply policy.Reply) tgbotapi.Message {
 	msg := tgbotapi.NewMessage(chatId, "")
 	if messageId != -1 {
 		msg.ReplyToMessageID = messageId
 	}
+	var returnMsg tgbotapi.Message
+	var err error
 	if reply.Type == policy.Failed {
 		msg.Text = "吖白，大脑一片空白……"
-		if _, err := bot.Send(msg); err != nil {
-			log.Println(err)
-		}
+		returnMsg, err = bot.Send(msg)
 	} else if reply.Type == policy.Text {
 		msg.Text = string(reply.Body)
-		if _, err := bot.Send(msg); err != nil {
-			log.Println(err)
-		}
+		returnMsg, err = bot.Send(msg)
 	} else if reply.Type == policy.Image {
 		file := tgbotapi.FileBytes{
 			Name:  "image.jpg",
@@ -127,8 +162,10 @@ func sendReply(bot *tgbotapi.BotAPI, chatId int64, messageId int, reply policy.R
 		if messageId != -1 {
 			photo.ReplyToMessageID = messageId
 		}
-		if _, err := bot.Send(photo); err != nil {
-			log.Println(err)
-		}
+		returnMsg, err = bot.Send(photo)
 	}
+	if err != nil {
+		log.Println(err)
+	}
+	return returnMsg
 }
