@@ -4,10 +4,12 @@ import (
 	"embed"
 	"encoding/json"
 	"log"
+	"os"
 
 	myTgBot "github.com/fengxxc/gakki_say/bot"
 	policy "github.com/fengxxc/gakki_say/policy"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/imdario/mergo"
 )
 
 //go:embed img
@@ -17,10 +19,15 @@ var imgDir embed.FS
 var fontDir embed.FS
 
 func main() {
-	// r := gin.Default()
-	// r.Run(":1988")
 
 	var config *Config = loadConfig()
+	// confMap := loadConfigToMap()
+	args := os.Args
+	argsMap := osArgs2Map(args, "--")
+	log.Printf("%+v", argsMap)
+	// mergo.MergeWithOverwrite(config, argsMap)
+	mergo.Map(config, argsMap, mergo.WithOverwriteWithEmptyValue)
+	log.Printf("%+v", config)
 
 	var imgDef *policy.ImgDef = loadImgDef()
 	var symbolMaps policy.SymbolMaps = imgDef.GetMaps()
@@ -87,4 +94,20 @@ func loadImgDef() *policy.ImgDef {
 	}
 	// log.Printf("img def: %#v", imgDef)
 	return imgDef
+}
+
+func osArgs2Map(args []string, argPrefix string) map[string]interface{} {
+	if args == nil || len(args) <= 1 {
+		return nil
+	}
+	argMap := make(map[string]interface{})
+	tempKey := ""
+	for i := 1; i < len(args); i++ {
+		if i%2 != 0 {
+			tempKey = args[i][len(argPrefix):]
+			continue
+		}
+		argMap[tempKey] = args[i]
+	}
+	return argMap
 }
