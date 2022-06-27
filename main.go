@@ -39,13 +39,16 @@ func main() {
 			userUsername := update.Message.From.UserName
 			userText := update.Message.Text
 			log.Printf("[%s] %s", userUsername, userText)
-
 			if update.Message.IsCommand() {
 				// 处理命令
 				myTgBot.CommmandHandler(bot, update.Message.Chat.ID, update.Message.Command(), imgDir, fontDir)
 			} else {
+				replyMessageId := -1
+				if replyToMessage := update.Message.ReplyToMessage; replyToMessage != nil {
+					replyMessageId = replyToMessage.MessageID
+				}
 				// 处理信息
-				myTgBot.UserTextHandler(bot, update.Message.Chat.ID, update.Message.MessageID, userText, &symbolMaps, imgDir, fontDir)
+				myTgBot.UserTextHandler(bot, update.Message.Chat.ID, update.Message.Chat.Type, update.Message.MessageID, replyMessageId, userText, &symbolMaps, imgDir, fontDir)
 			}
 
 		case myTgBot.CallbackQuery:

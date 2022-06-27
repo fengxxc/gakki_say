@@ -3,6 +3,7 @@ package bot
 import (
 	"embed"
 	"log"
+	"strings"
 
 	policy "github.com/fengxxc/gakki_say/policy"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -92,7 +93,7 @@ func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string, imgDir 
 	sendReply(bot, chatId, -1, reply)
 }
 
-func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText string, symbolMaps *policy.SymbolMaps, imgDir embed.FS, fontDir embed.FS) {
+func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messageId int, replyMessageId int, userText string, symbolMaps *policy.SymbolMaps, imgDir embed.FS, fontDir embed.FS) {
 	var numericKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("1"),
@@ -119,6 +120,17 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText
 		),
 	)
 
+	selfBotName := "gakki_say_bot"
+	// 在群、频道中，@我，我才会回应；私聊则不用
+	if chatType != "private" {
+		if !strings.HasPrefix(userText, "@"+selfBotName) {
+			// 此处可偷听群聊~
+			return
+		}
+		// @我了，remove @selfBotName
+		userText = userText[len("@"+selfBotName):]
+	}
+
 	switch userText {
 	case "open":
 		msg := tgbotapi.NewMessage(chatId, "open~")
@@ -137,7 +149,11 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, userText
 		return
 	}
 	var reply policy.Reply = policy.UserText(userText, symbolMaps, imgDir, fontDir)
-	sendReply(bot, chatId, messageId, reply)
+	msgId := messageId
+	if replyMessageId != -1 {
+		msgId = replyMessageId
+	}
+	sendReply(bot, chatId, msgId, reply)
 }
 
 func sendReply(bot *tgbotapi.BotAPI, chatId int64, messageId int, reply policy.Reply) tgbotapi.Message {
