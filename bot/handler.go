@@ -3,6 +3,7 @@ package bot
 import (
 	"embed"
 	"log"
+	"strconv"
 	"strings"
 
 	policy "github.com/fengxxc/gakki_say/policy"
@@ -93,6 +94,19 @@ func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string, imgDir 
 	sendReply(bot, chatId, -1, reply)
 }
 
+func DiceHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, dice *tgbotapi.Dice) {
+	var msgText string
+	var replyMap map[string][]string = make(map[string][]string)
+	replyMap["🏀"] = []string{"没进，菜得抠脚", "兜兜转转，然而没进", "啊咧，非……非静止画面？", "篮网下面开口剪大点啊八嘎！", "好耶~算你投进了~"}
+	replyMap["⚽"] = []string{"国足附体，再接再厉", "你就蹭蹭，不进去，嗯", "好球！", "进了，角度刁钻~", "进了，好棒棒~"}
+	if len(replyMap[dice.Emoji]) > 0 {
+		msgText = replyMap[dice.Emoji][dice.Value-1] + " (" + strconv.Itoa(dice.Value) + ")"
+	} else {
+		msgText = strconv.Itoa(dice.Value)
+	}
+	sendReply(bot, chatId, messageId, policy.Reply{Type: policy.Text, Body: []byte(msgText)})
+}
+
 func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messageId int, replyMessageId int, userText string, symbolMaps *policy.SymbolMaps, imgDir embed.FS, fontDir embed.FS) {
 	var numericKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
@@ -147,6 +161,12 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messag
 		msg.ReplyMarkup = inlineKeyboard
 		bot.Send(msg)
 		return
+	case "dart":
+		dice := tgbotapi.NewDiceWithEmoji(chatId, "🎯 (1-6)")
+		// dice := tgbotapi.NewDice(chatId)
+		dice.ReplyToMessageID = messageId
+		bot.Send(dice)
+		return
 	}
 	var reply policy.Reply = policy.UserText(userText, symbolMaps, imgDir, fontDir)
 	msgId := messageId
@@ -164,7 +184,7 @@ func sendReply(bot *tgbotapi.BotAPI, chatId int64, messageId int, reply policy.R
 	var returnMsg tgbotapi.Message
 	var err error
 	if reply.Type == policy.Failed {
-		msg.Text = "吖白，大脑一片空白……"
+		msg.Text = "不要发令我困扰的东西哦……"
 		returnMsg, err = bot.Send(msg)
 	} else if reply.Type == policy.Text {
 		msg.Text = string(reply.Body)

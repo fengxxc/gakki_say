@@ -42,12 +42,16 @@ func main() {
 			if update.Message.IsCommand() {
 				// 处理命令
 				myTgBot.CommmandHandler(bot, update.Message.Chat.ID, update.Message.Command(), imgDir, fontDir)
+			} else if update.Message.Dice != nil {
+				// 处理 骰子、飞镖、保龄球、篮球、足球、老虎机
+				var dice *tgbotapi.Dice = update.Message.Dice
+				myTgBot.DiceHandler(bot, update.Message.Chat.ID, update.Message.MessageID, dice)
 			} else {
 				replyMessageId := -1
 				if replyToMessage := update.Message.ReplyToMessage; replyToMessage != nil {
 					replyMessageId = replyToMessage.MessageID
 				}
-				// 处理信息
+				// 处理文本
 				myTgBot.UserTextHandler(bot, update.Message.Chat.ID, update.Message.Chat.Type, update.Message.MessageID, replyMessageId, userText, &symbolMaps, imgDir, fontDir)
 			}
 

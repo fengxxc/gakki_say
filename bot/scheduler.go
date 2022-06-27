@@ -13,6 +13,7 @@ type TgUpdType int
 const (
 	Message TgUpdType = iota
 	CallbackQuery
+	Dice
 )
 
 func FetchTask(botToken string, proxy string, updateCallback func(TgUpdType, *tgbotapi.BotAPI, tgbotapi.Update)) {
