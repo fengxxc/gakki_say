@@ -12,7 +12,7 @@
             "img": "smile e03(3).png",
             "emoji": ["👍", "😊", "❤️"],
             "emoticon": ["(*^▽^*)", "(*^_^*)", "（*＾-＾*）"],
-            "keyword": ["like"],
+            "keyword": ["thumb", "like"],
             "role": ["三岛花"]
         },
         {
@@ -48,6 +48,69 @@
             "emoji": ["😳", "🧐", "🤪", "👀", "👁"],
             "emoticon": ["(＠_＠;)", "(⊙﹏⊙)", "<@_@>", "（⊙ｏ⊙）", "(⊙ˍ⊙)", "(⊙o⊙)", "…(⊙_⊙;)…"],
             "keyword": ["stare", "glare", "glower"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2012 LegalHigh 11.mp4_004555.336.jpg",
+            "emoji": ["☝️", "😲", "😠"],
+            "emoticon": [],
+            "keyword": ["thumb", "finger", "point", "reproach"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2013 LegalHigh 02.mp4_004503.846.jpg",
+            "emoji": ["😊", "😇", "🙂", "😉", "😌", "😋"],
+            "emoticon": ["(*^_^*)", "(●ˇ∀ˇ●)", "(‾◡◝)", ";)", ";-)", ":)", "^_^", ":-)"],
+            "keyword": ["smile", "smirk", "tilting", "smiley", "smiling", "smilingly"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2013 LegalHigh 07.mp4_001014.773.jpg",
+            "emoji": ["😠", "😡", "🤬", "😤", "👿", "😾"],
+            "emoticon": ["￣へ￣", "（︶^︶）", "(* ￣︿￣)", "ヾ(≧へ≦)〃", "o(一︿一+)o"],
+            "keyword": ["angry", "furious", "disgust", "dislike"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2013 LegalHigh 09.mp4_000719.108.jpg",
+            "emoji": ["✌️", "😉"],
+            "emoticon": ["^o^y"],
+            "keyword": ["cute", " cutesy", "cutey", "ye", "scissor"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2013 LegalHigh 09.mp4_000719.753.jpg",
+            "emoji": ["✌️", "😀", "😃", "😺"],
+            "emoticon": ["^o^y"],
+            "keyword": ["cute", " cutesy", "cutey", "ye", "scissor"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2013 LegalHigh 09.mp4_000720.133.jpg",
+            "emoji": ["👌"],
+            "emoticon": [],
+            "keyword": ["ok"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2013 LegalHigh 09.mp4_003944.186.jpg",
+            "emoji": ["✌️", "😜", "🤪", "👻", "👅"],
+            "emoticon": ["^o^y"],
+            "keyword": ["cute", " cutesy", "cutey", "ye", "scissor", "tongue", "bandage"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2013 LegalHigh 09.mp4_003944.467.jpg",
+            "emoji": ["✌️", "😜", "🤪", "👻", "👅"],
+            "emoticon": ["^o^y"],
+            "keyword": ["cute", " cutesy", "cutey", "ye", "scissor", "tongue", "bandage"],
+            "role": ["黛真知子"]
+        },
+        {
+            "img": "2013 LegalHigh 09.mp4_003944.825.jpg",
+            "emoji": ["✌️", "😀", "😃", "😺"],
+            "emoticon": ["^o^y"],
+            "keyword": ["cute", " cutesy", "cutey", "ye", "scissor", "bandage"],
             "role": ["黛真知子"]
         }
     ]
