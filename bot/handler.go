@@ -2,15 +2,17 @@ package bot
 
 import (
 	"embed"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	policy "github.com/fengxxc/gakki_say/policy"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func CallbackQueryHandler(bot *tgbotapi.BotAPI, chatId int64, callbackQueryId string, callbackQueryData string, imgDir embed.FS, fontDir embed.FS) {
+func CallbackQueryHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, replyMessageId int, callbackQueryId string, callbackQueryData string, imgDir embed.FS, fontDir embed.FS) {
 	// Respond to the callback query, telling Telegram to show the user
 	// a message with the data received.
 	/* callback := tgbotapi.NewCallback(callbackQueryId, callbackQueryData)
@@ -21,51 +23,84 @@ func CallbackQueryHandler(bot *tgbotapi.BotAPI, chatId int64, callbackQueryId st
 	} */
 
 	// And finally, send a message containing the data received.
-	if callbackQueryData == "random_case" {
-		randomText := "🤬 八嘎，谁放屁了？！"
-		callback := tgbotapi.NewCallback(callbackQueryId, "you send '"+randomText+"'")
-		if _, err := bot.Request(callback); err != nil {
-			log.Println(err)
-		}
-		userMsg := sendReply(bot, chatId, -1, policy.Reply{
-			Type: policy.Text,
-			Body: []byte(randomText),
-		})
-
-		fileName := "img/逃げ恥_09.003633.146.png"
-		img, err := policy.ImgWriteTextDefault(fileName, randomText, imgDir, fontDir)
+	switch callbackQueryData {
+	case "some_case":
+		// msg := tgbotapi.NewEditMessageTextAndMarkup(chatId, messageId, "几个栗子~ \n", inlineKeyboard)
+		replyKB := tgbotapi.NewReplyKeyboard(
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton("🤬 谁放屁了？！"),
+				tgbotapi.NewKeyboardButton("👀 让我康康~"),
+				tgbotapi.NewKeyboardButton("☝️ 一定是你！"),
+			),
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton("😊 萌混过关~"),
+				tgbotapi.NewKeyboardButton("👐 卖萌禁止！"),
+				tgbotapi.NewKeyboardButton("😞 心里委屈..."),
+			),
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton("😠 超级生气！"),
+				tgbotapi.NewKeyboardButton("✌️ 宣告胜利~"),
+				tgbotapi.NewKeyboardButton("[关闭]"),
+			),
+		)
+		// msg := tgbotapi.NewEditMessageText(chatId, messageId, START_TEXT)
+		msg := tgbotapi.NewMessage(chatId, "几个栗子~ 点击按钮快速发送。点击[关闭]退出。 \n")
+		msg.ReplyMarkup = replyKB
+		bot.Send(msg)
+		return
+	case "push_🏀":
+		dice := tgbotapi.NewDiceWithEmoji(chatId, "🏀 (1-5)")
+		// dice := tgbotapi.NewDice(chatId)
+		dice.ReplyToMessageID = replyMessageId
+		// log.Printf("push dice is: %+v\n", dice)
+		sendMsg, err := bot.Send(dice)
 		if err != nil {
-			log.Println(err)
 			return
 		}
-		var reply policy.Reply = policy.Reply{
-			Type: policy.Image,
-			Body: policy.ImgToBytes(img, policy.GetImgTypeByFileName(fileName)),
+		myVal := sendMsg.Dice.Value
+		customerVal := sendMsg.ReplyToMessage.Dice.Value
+		var rereText string
+		if myVal > customerVal {
+			rereText = fmt.Sprintf("你%d，我%d，我赢了~", customerVal, myVal)
+		} else if myVal < customerVal {
+			rereText = fmt.Sprintf("你%d，我%d，你赢了~", customerVal, myVal)
+		} else {
+			rereText = fmt.Sprintf("你%d，我%d，平局~", customerVal, myVal)
 		}
-		sendReply(bot, chatId, userMsg.MessageID, reply)
+		sendReply(bot, chatId, replyMessageId, policy.Reply{Type: policy.Text, Body: []byte(rereText)})
 	}
 
 }
+
+var START_TEXT string = "初次见面，请多指教，我是图文并茂的gakki_say~ \n" +
+	"你可以使用我生成带文字的Gakki图片 \n" +
+	"我会根据emoji选择相应的Gakki图片并合成文字返回\n\n" +
+	"具体方法是：\n" +
+	"  发送 `emoji 你的文字`（注意emoji后有空格哦）\n" +
+	"在群组里使用：\n" +
+	"  1、加我进群，然后提拔我为管理员\n" +
+	"  2、发送 `@gakki_say_bot emoji 你的文字`，没错，先at我，我才理你 \n" +
+	"现在，输入 '👍 元气' 试试看~ \n\n" +
+	"或者点击 '举个栗子' 快速体验\n" +
+	"贡献代码或素材请点击 '项目地址'\n"
 
 func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string, imgDir embed.FS, fontDir embed.FS) {
 	var reply policy.Reply = policy.Reply{Type: policy.Failed, Body: []byte("")}
 	switch command {
 	case "start":
-		// reply.Type = policy.Text
-		// reply.Body = []byte("初次见面，请多指教，我是图文并茂的Gakki~")
-		msg := tgbotapi.NewMessage(chatId, "初次见面，请多指教，我是图文并茂的gakki_say~ \n"+
-			"你可以使用我生成带文字的Gakki图片。 \n\n"+
-			"具体方法是：聊天框中输入 'emoji表情[空格]展现的文字'\n"+
-			"我会根据emoji选择相应的Gakki图片并合成文字返回\n"+
-			"贡献代码或素材请点击“项目地址”\n\n"+
-			"现在，输入'👍 元气'试试看~ ",
-		)
+		msg := tgbotapi.NewMessage(chatId, START_TEXT)
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("举个栗子", "some_case"),
 				tgbotapi.NewInlineKeyboardButtonURL("项目地址", "https://github.com/fengxxc/gakki_say"),
-				tgbotapi.NewInlineKeyboardButtonData("随机示例", "random_case"),
 			),
 		)
+		// msg.ParseMode = "Markdown"
+		msg.Entities = []tgbotapi.MessageEntity{
+			{Type: "code", Offset: policy.UnicodeIndex(START_TEXT, "emoji 你的文字"), Length: utf8.RuneCountInString("emoji 你的文字")},
+			{Type: "code", Offset: policy.UnicodeIndex(START_TEXT, "@gakki_say_bot emoji 你的文字"), Length: utf8.RuneCountInString("@gakki_say_bot emoji 你的文字")},
+			{Type: "code", Offset: policy.UnicodeIndex(START_TEXT, "👍 元气"), Length: utf8.RuneCountInString("👍 元气")},
+		}
 		bot.Send(msg)
 		return
 	case "help":
@@ -76,7 +111,7 @@ func CommmandHandler(bot *tgbotapi.BotAPI, chatId int64, command string, imgDir 
 		reply.Body = []byte("这个功能还没做好……再等等")
 	case "ping":
 		fileName := "img/pingpang.jpg"
-		img, err := policy.ImgWriteText(fileName, "pang~", policy.DrawStringConfig{
+		img, err := policy.ImgWriteText(fileName, "pang?", policy.DrawStringConfig{
 			Ax:          0.5,
 			Ay:          0.5,
 			FontFamily:  "SIMYOU.TTF",
@@ -98,42 +133,25 @@ func DiceHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, dice *tgbota
 	var msgText string
 	var replyMap map[string][]string = make(map[string][]string)
 	replyMap["🏀"] = []string{"没进，菜得抠脚", "兜兜转转，然而没进", "啊咧，非……非静止画面？", "篮网下面开口剪大点啊八嘎！", "好耶~算你投进了~"}
-	replyMap["⚽"] = []string{"国足附体，再接再厉", "你就蹭蹭，不进去，嗯", "好球！", "进了，角度刁钻~", "进了，好棒棒~"}
+	replyMap["⚽"] = []string{"国足附体，再接再厉", "你就蹭蹭，不进去，嗯", "今天守门员请假，便宜你了~", "进了，角度刁钻~", "这也能进！好棒棒~"}
 	if len(replyMap[dice.Emoji]) > 0 {
 		msgText = replyMap[dice.Emoji][dice.Value-1] + " (" + strconv.Itoa(dice.Value) + ")"
 	} else {
 		msgText = strconv.Itoa(dice.Value)
 	}
-	sendReply(bot, chatId, messageId, policy.Reply{Type: policy.Text, Body: []byte(msgText)})
+	var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("俺也来一个", "push_"+dice.Emoji),
+		),
+	)
+	msg := tgbotapi.NewMessage(chatId, msgText)
+	msg.ReplyMarkup = inlineKeyboard
+	msg.ReplyToMessageID = messageId
+	bot.Send(msg)
+	// sendReply(bot, chatId, messageId, policy.Reply{Type: policy.Text, Body: []byte(msgText)})
 }
 
 func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messageId int, replyMessageId int, userText string, symbolMaps *policy.SymbolMaps, imgDir embed.FS, fontDir embed.FS) {
-	var numericKeyboard = tgbotapi.NewReplyKeyboard(
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("1"),
-			tgbotapi.NewKeyboardButton("2"),
-			tgbotapi.NewKeyboardButton("3"),
-		),
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("4"),
-			tgbotapi.NewKeyboardButton("5"),
-			tgbotapi.NewKeyboardButton("6"),
-		),
-	)
-
-	var inlineKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL("1.com", "http://1.com"),
-			tgbotapi.NewInlineKeyboardButtonData("2", "2"),
-			tgbotapi.NewInlineKeyboardButtonData("3", "3"),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("4", "4"),
-			tgbotapi.NewInlineKeyboardButtonData("5", "5"),
-			tgbotapi.NewInlineKeyboardButtonData("6", "6"),
-		),
-	)
-
 	selfBotName := "gakki_say_bot"
 	// 在群、频道中，@我，我才会回应；私聊则不用
 	if chatType != "private" {
@@ -146,26 +164,10 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messag
 	}
 
 	switch userText {
-	case "open":
-		msg := tgbotapi.NewMessage(chatId, "open~")
-		msg.ReplyMarkup = numericKeyboard
-		bot.Send(msg)
-		return
-	case "close":
-		msg := tgbotapi.NewMessage(chatId, "close~")
+	case "[关闭]":
+		msg := tgbotapi.NewMessage(chatId, "开始你的表演~")
 		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 		bot.Send(msg)
-		return
-	case "open_inline":
-		msg := tgbotapi.NewMessage(chatId, "open_inline~")
-		msg.ReplyMarkup = inlineKeyboard
-		bot.Send(msg)
-		return
-	case "dart":
-		dice := tgbotapi.NewDiceWithEmoji(chatId, "🎯 (1-6)")
-		// dice := tgbotapi.NewDice(chatId)
-		dice.ReplyToMessageID = messageId
-		bot.Send(dice)
 		return
 	}
 	var reply policy.Reply = policy.UserText(userText, symbolMaps, imgDir, fontDir)

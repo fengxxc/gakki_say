@@ -56,7 +56,11 @@ func main() {
 			}
 
 		case myTgBot.CallbackQuery:
-			myTgBot.CallbackQueryHandler(bot, update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.ID, update.CallbackQuery.Data, imgDir, fontDir)
+			replyMessageId := -1
+			if replyToMessage := update.CallbackQuery.Message.ReplyToMessage; replyToMessage != nil {
+				replyMessageId = replyToMessage.MessageID
+			}
+			myTgBot.CallbackQueryHandler(bot, update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, replyMessageId, update.CallbackQuery.ID, update.CallbackQuery.Data, imgDir, fontDir)
 		}
 
 	})
