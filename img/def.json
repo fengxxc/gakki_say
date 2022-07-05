@@ -9,14 +9,14 @@
             "role": []
         },
         {
-            "img": "smile e03(3).png",
+            "img": "smile e03(3).jpeg",
             "emoji": ["👍", "😊", "❤️"],
             "emoticon": ["(*^▽^*)", "(*^_^*)", "（*＾-＾*）"],
             "keyword": ["thumb", "like"],
             "role": ["三岛花"]
         },
         {
-            "img": "逃げ恥_09.003633.146.png",
+            "img": "逃げ恥_09.003633.146.jpeg",
             "emoji": ["🤬", "😶", "🤭", "😷", "🙊"],
             "emoticon": ["o(≧口≦)o", "(◎﹏◎)"],
             "keyword": ["angry"],
@@ -112,6 +112,20 @@
             "emoticon": ["^o^y"],
             "keyword": ["cute", " cutesy", "cutey", "ye", "scissor", "bandage"],
             "role": ["黛真知子"]
+        },
+        {
+            "img": "全开女孩.Zenkai.Girl.Ep07.Chi_Jap.HDTVrip.1024X576-20220620_220336.058.jpeg",
+            "emoji": ["😡", "😠", "😤", "😾"],
+            "emoticon": [""],
+            "keyword": ["angry"],
+            "role": ["鲇川若叶"]
+        },
+        {
+            "img": "全开女孩.Zenkai.Girl.Ep10.Chi_Jap.HDTVrip.1024X576-20220623_215706.738.jpeg",
+            "emoji": ["🤩", "😍"],
+            "emoticon": ["( $ _ $ )"],
+            "keyword": ["anthomaniac"],
+            "role": ["鲇川若叶"]
         }
     ]
 }
