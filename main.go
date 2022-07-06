@@ -61,6 +61,8 @@ func main() {
 				replyMessageId = replyToMessage.MessageID
 			}
 			myTgBot.CallbackQueryHandler(bot, update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, replyMessageId, update.CallbackQuery.ID, update.CallbackQuery.Data, imgDir, fontDir)
+		case myTgBot.InlineQuery:
+			myTgBot.InlineQueryHandler(bot, update.InlineQuery.ID, update.InlineQuery.Query, update.InlineQuery.From.ID, &symbolMaps)
 		}
 
 	})

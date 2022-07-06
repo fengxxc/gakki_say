@@ -14,6 +14,7 @@ const (
 	Message TgUpdType = iota
 	CallbackQuery
 	Dice
+	InlineQuery
 )
 
 func FetchTask(botToken string, proxy string, updateCallback func(TgUpdType, *tgbotapi.BotAPI, tgbotapi.Update)) {
@@ -41,7 +42,9 @@ func FetchTask(botToken string, proxy string, updateCallback func(TgUpdType, *tg
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
-		if update.Message != nil { // If we got a message
+		if update.InlineQuery != nil {
+			updateCallback(InlineQuery, bot, update)
+		} else if update.Message != nil { // If we got a message
 			updateCallback(Message, bot, update)
 		} else if update.CallbackQuery != nil {
 			updateCallback(CallbackQuery, bot, update)

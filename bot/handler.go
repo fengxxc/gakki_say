@@ -1,13 +1,17 @@
 package bot
 
 import (
+	"crypto/md5"
 	"embed"
+	"encoding/hex"
 	"fmt"
 	"log"
+	"net/url"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 
+	mapset "github.com/deckarep/golang-set"
 	policy "github.com/fengxxc/gakki_say/policy"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -152,22 +156,24 @@ func DiceHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, dice *tgbota
 }
 
 func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messageId int, replyMessageId int, userText string, symbolMaps *policy.SymbolMaps, imgDir embed.FS, fontDir embed.FS) {
-	selfBotName := "gakki_say_bot"
+	// selfBotName := "gakki_say_bot"
 	// 在群、频道中，@我，我才会回应；私聊则不用
-	if chatType != "private" {
+	/* if chatType != "private" {
 		if !strings.HasPrefix(userText, "@"+selfBotName) {
 			// 此处可偷听群聊~
 			return
 		}
 		// @我了，remove @selfBotName
 		userText = userText[len("@"+selfBotName):]
-	}
+	} */
 
 	switch userText {
 	case "[关闭]":
-		msg := tgbotapi.NewMessage(chatId, "开始你的表演~")
+		msg := tgbotapi.NewMessage(chatId, "关闭")
 		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-		bot.Send(msg)
+		sendMsg, _ := bot.Send(msg)
+		bot.Send(tgbotapi.NewDeleteMessage(chatId, messageId))
+		bot.Send(tgbotapi.NewDeleteMessage(chatId, sendMsg.MessageID))
 		return
 	}
 	var reply policy.Reply = policy.UserText(userText, symbolMaps, imgDir, fontDir)
@@ -176,6 +182,35 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messag
 		msgId = replyMessageId
 	}
 	sendReply(bot, chatId, msgId, reply)
+}
+
+func InlineQueryHandler(bot *tgbotapi.BotAPI, inlineQueryId string, query string, fromId int64, symbolMaps *policy.SymbolMaps) {
+	var imgBaseURL string = "https://raw.githubusercontent.com/fengxxc/gakki_say/master/img/"
+	var inlineQueryResults []interface{} = []interface{}{}
+	query = strings.Trim(query, " ")
+	emoji := strings.Split(query, " ")[0]
+	if symbolMaps.ContainsEmoji(emoji) {
+		var imgNameSet mapset.Set = symbolMaps.EmojiMap[emoji]
+		imgNameSet.Each(func(item interface{}) bool {
+			var imgName string = item.(string)
+			var imgURL string = imgBaseURL + url.PathEscape(imgName)
+			var resPhoto = tgbotapi.NewInlineQueryResultPhoto(md5Encode(imgName), imgURL)
+			resPhoto.ThumbURL = imgURL
+			inlineQueryResults = append(inlineQueryResults, resPhoto)
+			return false
+		})
+	}
+	if len(inlineQueryResults) == 0 {
+		return
+	}
+	inlineConfig := tgbotapi.InlineConfig{
+		InlineQueryID: inlineQueryId,
+		IsPersonal:    true,
+		CacheTime:     5,
+		Results:       inlineQueryResults,
+	}
+	bot.Request(inlineConfig)
+	// bot.Send(inlineConfig)
 }
 
 func sendReply(bot *tgbotapi.BotAPI, chatId int64, messageId int, reply policy.Reply) tgbotapi.Message {
@@ -206,4 +241,10 @@ func sendReply(bot *tgbotapi.BotAPI, chatId int64, messageId int, reply policy.R
 		log.Println(err)
 	}
 	return returnMsg
+}
+
+func md5Encode(str string) string {
+	h := md5.New()
+	h.Write([]byte(str))
+	return hex.EncodeToString(h.Sum(nil))
 }
