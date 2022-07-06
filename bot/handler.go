@@ -184,7 +184,10 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messag
 	sendReply(bot, chatId, msgId, reply)
 }
 
-func InlineQueryHandler(bot *tgbotapi.BotAPI, inlineQueryId string, query string, fromId int64, symbolMaps *policy.SymbolMaps) {
+func InlineQueryHandler(bot *tgbotapi.BotAPI, inlineQueryId string, query string, fromId int64, symbolMaps *policy.SymbolMaps, host string) {
+	if query == "" {
+		return
+	}
 	var imgBaseURL string = "https://raw.githubusercontent.com/fengxxc/gakki_say/master/img/"
 	var inlineQueryResults []interface{} = []interface{}{}
 	query = strings.Trim(query, " ")
@@ -195,7 +198,7 @@ func InlineQueryHandler(bot *tgbotapi.BotAPI, inlineQueryId string, query string
 			var imgName string = item.(string)
 			var imgURL string = imgBaseURL + url.PathEscape(imgName)
 			var resPhoto = tgbotapi.NewInlineQueryResultPhoto(md5Encode(imgName), imgURL)
-			resPhoto.ThumbURL = imgURL
+			resPhoto.ThumbURL = host + "/gakki_say/thumb/" + url.PathEscape(imgName)
 			inlineQueryResults = append(inlineQueryResults, resPhoto)
 			return false
 		})

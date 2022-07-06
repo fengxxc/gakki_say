@@ -3,9 +3,11 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"io/fs"
 	"log"
 	"os"
 
+	"github.com/disintegration/imaging"
 	myTgBot "github.com/fengxxc/gakki_say/bot"
 	policy "github.com/fengxxc/gakki_say/policy"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -32,6 +34,9 @@ func main() {
 	var imgDef *policy.ImgDef = loadImgDef()
 	var symbolMaps policy.SymbolMaps = imgDef.GetMaps()
 	// log.Printf("%+v", symbolMaps)
+
+	// make thumbnail
+	makeThumbnail()
 
 	myTgBot.FetchTask(config.TgBotToken, config.TgProxy, func(tgUpdType myTgBot.TgUpdType, bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		switch tgUpdType {
@@ -62,7 +67,7 @@ func main() {
 			}
 			myTgBot.CallbackQueryHandler(bot, update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, replyMessageId, update.CallbackQuery.ID, update.CallbackQuery.Data, imgDir, fontDir)
 		case myTgBot.InlineQuery:
-			myTgBot.InlineQueryHandler(bot, update.InlineQuery.ID, update.InlineQuery.Query, update.InlineQuery.From.ID, &symbolMaps)
+			myTgBot.InlineQueryHandler(bot, update.InlineQuery.ID, update.InlineQuery.Query, update.InlineQuery.From.ID, &symbolMaps, config.Host)
 		}
 
 	})
@@ -72,6 +77,7 @@ func main() {
 type Config struct {
 	TgBotToken string `json:"tgBotToken"`
 	TgProxy    string `json:"tgProxy"`
+	Host       string `json:"host"`
 }
 
 //go:embed config.json
@@ -123,4 +129,43 @@ func osArgs2Map(args []string, argPrefix string) map[string]interface{} {
 		argMap[tempKey] = args[i]
 	}
 	return argMap
+}
+
+func makeThumbnail() {
+	thumbDir, _ := os.Getwd()
+	thumbDir = thumbDir + "/.cache/thumb"
+	err := os.RemoveAll(thumbDir)
+	if err != nil {
+		log.Panicf("remove thumb dir failed: %s", err)
+	}
+	err = os.MkdirAll(thumbDir, 0755)
+	if err != nil {
+		log.Panicf("make thumb dir failed: %s", err)
+	}
+	fs.WalkDir(imgDir, "img", func(path string, d fs.DirEntry, err error) error {
+		// log.Printf("walkDir: %s", path)
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || d.Name() == "def.json" {
+			return nil
+		}
+		log.Printf("dirEntry.Name: %+v", d.Name())
+		file, err := imgDir.Open(path)
+		if err != nil {
+			log.Println("open file failed: ", err)
+			return err
+		}
+		img, err := imaging.Decode(file)
+		if err != nil {
+			log.Println("decode file failed: ", err)
+		}
+		img = imaging.Resize(img, 0, 89, imaging.Lanczos)
+		err = imaging.Save(img, thumbDir+"/"+d.Name(), imaging.JPEGQuality(80))
+		if err != nil {
+			log.Printf("save thumb failed: %s", err)
+			return nil
+		}
+		return nil
+	})
 }
