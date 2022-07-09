@@ -1,6 +1,6 @@
 BUILD_ENV := CGO_ENABLED=0
 APP=gakki_say
-VERSION=1.0.0
+VERSION=1.1.0
 
 # linux or mac 环境编译
 # make [cmd]
