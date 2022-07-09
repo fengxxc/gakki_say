@@ -75,11 +75,11 @@ func CallbackQueryHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, rep
 var START_TEXT string = "初次见面，请多指教，我是图文并茂的gakki_say~ \n" +
 	"你可以使用我生成带文字的Gakki图片 \n" +
 	"我会根据emoji选择相应的Gakki图片并合成文字返回\n\n" +
-	"具体方法是：\n" +
-	"  发送 `emoji 你的文字`（注意emoji后有空格哦）\n" +
-	"在群组里使用：\n" +
-	"  1、加我进群，然后提拔我为管理员\n" +
-	"  2、发送 `@gakki_say_bot emoji 你的文字`，没错，先at我，我才理你 \n" +
+	"有3种使用方法：\n" +
+	"  1、私聊模式：发送 `emoji 你的文字`（注意emoji后有空格哦）\n" +
+	"  2、群组模式：发送 `/g@gakki_say_bot emoji 你的文字` \n" +
+	"  3、内联模式：任意聊天框里发送 `@gakki_say_bot emoji 你的文字`选择图片 \n" +
+	"\n" +
 	"现在，输入 '👍 元气' 试试看~ \n\n" +
 	"或者点击 '举个栗子' 快速体验\n" +
 	"贡献代码或素材请点击 '项目地址'\n"
