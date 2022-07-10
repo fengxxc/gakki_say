@@ -156,16 +156,14 @@ func DiceHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, dice *tgbota
 }
 
 func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messageId int, replyMessageId int, userText string, symbolMaps *policy.SymbolMaps, imgDir embed.FS, fontDir embed.FS) {
-	// selfBotName := "gakki_say_bot"
-	// 在群、频道中，@我，我才会回应；私聊则不用
-	/* if chatType != "private" {
+	selfBotName := "gakki_say_bot"
+	// 在群、频道中，不做响应
+	if chatType != "private" {
 		if !strings.HasPrefix(userText, "@"+selfBotName) {
-			// 此处可偷听群聊~
+			// 成为管理员的话，此处可偷听群聊~
 			return
 		}
-		// @我了，remove @selfBotName
-		userText = userText[len("@"+selfBotName):]
-	} */
+	}
 
 	switch userText {
 	case "[关闭]":
