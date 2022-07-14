@@ -1,5 +1,6 @@
 {
     "tgBotToken": "replace your telegram bot Token",
     "tgProxy": "replace proxy url if you need, such as 'socks5://127.0.0.1:1080'",
-    "host": "replace your host"
+    "host": "replace your host",
+    "serverListen": "replace your server listen port",
 }

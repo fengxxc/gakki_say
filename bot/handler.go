@@ -181,19 +181,21 @@ func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messag
 	sendReply(bot, chatId, msgId, reply)
 }
 
-func InlineQueryHandler(bot *tgbotapi.BotAPI, inlineQueryId string, query string, fromId int64, symbolMaps *policy.SymbolMaps, host string) {
+func InlineQueryHandler(bot *tgbotapi.BotAPI, inlineQueryId string, query string, fromId int64, symbolMaps *policy.SymbolMaps, host string, imgDir embed.FS) {
 	if query == "" {
 		return
 	}
-	var imgBaseURL string = "https://raw.githubusercontent.com/fengxxc/gakki_say/master/img/"
+	// var imgBaseURL string = "https://raw.githubusercontent.com/fengxxc/gakki_say/master/img/"
+	var imgBaseURL string = host + "/gakki_say/image/"
 	var inlineQueryResults []interface{} = []interface{}{}
 	query = strings.Trim(query, " ")
-	emoji := strings.Split(query, " ")[0]
+	querySpl := strings.Split(query, " ")
+	emoji, queryText := querySpl[0], strings.Join(querySpl[1:], " ")
 	if symbolMaps.ContainsEmoji(emoji) {
 		var imgNameSet mapset.Set = symbolMaps.EmojiMap[emoji]
 		imgNameSet.Each(func(item interface{}) bool {
 			var imgName string = item.(string)
-			var imgURL string = imgBaseURL + url.PathEscape(imgName)
+			var imgURL string = imgBaseURL + url.PathEscape(imgName) + "?text=" + queryText
 			var resPhoto = tgbotapi.NewInlineQueryResultPhoto(md5Encode(imgName), imgURL)
 			resPhoto.ThumbURL = host + "/gakki_say/thumb/" + url.PathEscape(imgName)
 			inlineQueryResults = append(inlineQueryResults, resPhoto)

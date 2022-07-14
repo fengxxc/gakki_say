@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"io/fs"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/disintegration/imaging"
 	myTgBot "github.com/fengxxc/gakki_say/bot"
@@ -38,6 +41,58 @@ func main() {
 	// make thumbnail
 	makeThumbnail()
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		uri := r.RequestURI
+		if !strings.HasPrefix(uri, "/gakki_say") {
+			return
+		}
+		log.Printf("accept request: %s", uri)
+
+		imageName := uri[strings.LastIndex(uri, "/")+1:]
+		if endIdx := strings.Index(imageName, "?"); endIdx >= 0 {
+			imageName = imageName[:endIdx]
+		}
+		imageName, err := url.PathUnescape(imageName)
+		if err != nil {
+			log.Printf("url unescape failed: %v", err)
+		}
+		log.Printf("image name: %s", imageName)
+
+		/* thumb */
+		if strings.Contains(uri, "/thumb/") {
+			baseDir, _ := os.Getwd()
+			thumbImg := baseDir + "/.cache/thumb/" + imageName
+			f, err := os.ReadFile(thumbImg)
+			if err != nil {
+				log.Printf("Error loading thumb image: %v", err)
+				return
+			}
+			w.Header().Set("Content-Type", "image/jpeg")
+			w.Write(f)
+			return
+		}
+
+		/* image */
+		values := r.URL.Query()
+		text := values.Get("text")
+		w.Header().Set("Content-Type", "image/jpeg")
+		img, err := policy.ImgWriteText("img/"+imageName, text, policy.DrawStringConfig{
+			Ax:          0.5,
+			Ay:          0.5,
+			FontFamily:  "SIMYOU.TTF",
+			TextBgColor: &policy.RGBA{R: 89, G: 89, B: 89, A: 64},
+		}, imgDir, fontDir)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		w.Write(policy.ImgToBytes(img, policy.Jpeg))
+	})
+	go func() {
+		log.Fatal(http.ListenAndServe(config.ServerListen, nil))
+	}()
+
 	myTgBot.FetchTask(config.TgBotToken, config.TgProxy, func(tgUpdType myTgBot.TgUpdType, bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		switch tgUpdType {
 		case myTgBot.Message:
@@ -67,7 +122,7 @@ func main() {
 			}
 			myTgBot.CallbackQueryHandler(bot, update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, replyMessageId, update.CallbackQuery.ID, update.CallbackQuery.Data, imgDir, fontDir)
 		case myTgBot.InlineQuery:
-			myTgBot.InlineQueryHandler(bot, update.InlineQuery.ID, update.InlineQuery.Query, update.InlineQuery.From.ID, &symbolMaps, config.Host)
+			myTgBot.InlineQueryHandler(bot, update.InlineQuery.ID, update.InlineQuery.Query, update.InlineQuery.From.ID, &symbolMaps, config.Host, imgDir)
 		}
 
 	})
@@ -75,9 +130,10 @@ func main() {
 }
 
 type Config struct {
-	TgBotToken string `json:"tgBotToken"`
-	TgProxy    string `json:"tgProxy"`
-	Host       string `json:"host"`
+	TgBotToken   string `json:"tgBotToken"`
+	TgProxy      string `json:"tgProxy"`
+	Host         string `json:"host"`
+	ServerListen string `json:"serverListen"`
 }
 
 //go:embed config.json
