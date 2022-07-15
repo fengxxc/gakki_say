@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"io/fs"
 	"log"
-	"net/http"
-	"net/url"
 	"os"
-	"strings"
 
 	"github.com/disintegration/imaging"
+	"github.com/fengxxc/gakki_say/api"
 	myTgBot "github.com/fengxxc/gakki_say/bot"
 	policy "github.com/fengxxc/gakki_say/policy"
+	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/imdario/mergo"
 )
@@ -41,56 +40,10 @@ func main() {
 	// make thumbnail
 	makeThumbnail()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		uri := r.RequestURI
-		if !strings.HasPrefix(uri, "/gakki_say") {
-			return
-		}
-		log.Printf("accept request: %s", uri)
-
-		imageName := uri[strings.LastIndex(uri, "/")+1:]
-		if endIdx := strings.Index(imageName, "?"); endIdx >= 0 {
-			imageName = imageName[:endIdx]
-		}
-		imageName, err := url.PathUnescape(imageName)
-		if err != nil {
-			log.Printf("url unescape failed: %v", err)
-		}
-		log.Printf("image name: %s", imageName)
-
-		/* thumb */
-		if strings.Contains(uri, "/thumb/") {
-			baseDir, _ := os.Getwd()
-			thumbImg := baseDir + "/.cache/thumb/" + imageName
-			f, err := os.ReadFile(thumbImg)
-			if err != nil {
-				log.Printf("Error loading thumb image: %v", err)
-				return
-			}
-			w.Header().Set("Content-Type", "image/jpeg")
-			w.Write(f)
-			return
-		}
-
-		/* image */
-		values := r.URL.Query()
-		text := values.Get("text")
-		w.Header().Set("Content-Type", "image/jpeg")
-		img, err := policy.ImgWriteText("img/"+imageName, text, policy.DrawStringConfig{
-			Ax:          0.5,
-			Ay:          0.5,
-			FontFamily:  "SIMYOU.TTF",
-			TextBgColor: &policy.RGBA{R: 89, G: 89, B: 89, A: 64},
-		}, imgDir, fontDir)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		w.Write(policy.ImgToBytes(img, policy.Jpeg))
-	})
+	r := gin.Default()
+	api.Router(r, imgDir, fontDir)
 	go func() {
-		log.Fatal(http.ListenAndServe(config.ServerListen, nil))
+		r.Run(config.ServerListen)
 	}()
 
 	myTgBot.FetchTask(config.TgBotToken, config.TgProxy, func(tgUpdType myTgBot.TgUpdType, bot *tgbotapi.BotAPI, update tgbotapi.Update) {
