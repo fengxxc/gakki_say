@@ -155,6 +155,9 @@ func DiceHandler(bot *tgbotapi.BotAPI, chatId int64, messageId int, dice *tgbota
 }
 
 func UserTextHandler(bot *tgbotapi.BotAPI, chatId int64, chatType string, messageId int, replyMessageId int, userText string, symbolMaps *policy.SymbolMaps, imgDir embed.FS, fontDir embed.FS) {
+	if userText == "" {
+		return
+	}
 	selfBotName := "gakki_say_bot"
 	// 在群、频道中，不做响应
 	if chatType != "private" {
